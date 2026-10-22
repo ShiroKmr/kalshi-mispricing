@@ -1,7 +1,8 @@
 from pydantic import BaseModel, ConfigDict
+from enum import Enum
 from pydantic.alias_generators import to_snake
 from decimal import Decimal
-from datetime import datetime
+from datetime import datetime, date
 
 # Expected relevant values of the market
 class Market(BaseModel):
@@ -20,8 +21,8 @@ class Market(BaseModel):
     expirationTime: datetime
 
     strikeType: str | None = None #>,< or =
-    floorStrike: float | None = None #bottom
-    capStrike: float | None = None #upper
+    floorStrike: Decimal | None = None #bottom
+    capStrike: Decimal | None = None #upper
     functionalStrike: str | None = None # if the settlement value is determined based on a function
 
     yesBidDollars: Decimal | None = None # sell yes
@@ -41,3 +42,30 @@ class Market(BaseModel):
 class MarketsResponse(BaseModel):
     markets: list[Market]
     cursor: str | None = None
+
+class ComparisonOperator(Enum):
+    GREATER = ">"
+    LESS = "<"
+
+class ReferencePeriod(BaseModel):
+    year: int
+    month: int
+
+class EconomicContract(BaseModel):
+    economicVariable: str
+    operator: ComparisonOperator
+    strike: Decimal
+    referencePeriod: ReferencePeriod
+
+class EconomicMarket(BaseModel):
+    market: Market
+    contract: EconomicContract
+
+class orderBook(BaseModel):
+    yesBidDollars: Decimal | None = None
+    yesAskDollars: Decimal | None = None
+    noBidDollars: Decimal | None = None
+    noAskDollars: Decimal | None = None
+
+    yesBidSizeFp: Decimal | None = None
+    yesAskSizeFp: Decimal | None = None
